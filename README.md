@@ -1,2 +1,2 @@
-# gsea
-Official library for gene set enrichment analysis :zap:
+# GSEA
+Official library for gene set enrichment analyses :zap:
