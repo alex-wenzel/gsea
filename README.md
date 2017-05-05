@@ -1,2 +1,2 @@
 # gsea
-Run gene set enrichment analysis (GSEA)
+Official library for gene set enrichment analysis :zap:
