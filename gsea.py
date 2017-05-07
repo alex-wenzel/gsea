@@ -4,21 +4,23 @@ Computational Cancer Analysis Library
 Authors:
     Huwate (Kwat) Yeerna (Medetgul-Ernar)
         kwat.medetgul.ernar@gmail.com
-        Computational Cancer Analysis Laboratory, UCSD Cancer Center
+        Computational Cancer Analysis Laboratory, UCSD Moore's Cancer Center
 
     Pablo Tamayo
         ptamayo@ucsd.edu
-        Computational Cancer Analysis Laboratory, UCSD Cancer Center
+        Computational Cancer Analysis Laboratory, UCSD Moore's Cancer Center
 """
 
 from numpy import asarray, cumsum, empty, in1d, max, mean, min, where
 from numpy.random import shuffle
 from pandas import DataFrame
 
-from ..helper.d2 import normalize_2d_or_1d
+from ..helper.d2 import normalize_2d
 
 
-def convert_genes_to_gene_sets(g_x_s, gss, power=1,
+def convert_genes_to_gene_sets(g_x_s,
+                               gss,
+                               power=1,
                                statistic='Kolmogorov-Smirnov',
                                n_permutations=0):
     """
@@ -32,8 +34,7 @@ def convert_genes_to_gene_sets(g_x_s, gss, power=1,
     """
 
     # Rank normalize columns
-    g_x_s = normalize_2d_or_1d(g_x_s, 'rank', axis=0) / \
-            g_x_s.shape[0]
+    g_x_s = normalize_2d(g_x_s, 'rank', axis=0) / g_x_s.shape[0]
 
     # Make Gene-Set-x-Sample place holder
     gs_x_s = DataFrame(index=gss.index, columns=g_x_s.columns)
@@ -48,7 +49,7 @@ def convert_genes_to_gene_sets(g_x_s, gss, power=1,
         for s_n, s_v in g_x_s.items():
 
             # Sort sample values from high to low and compute enrichment score
-            s_s_v = s_v.sort_values(ascending=False) ** power
+            s_s_v = s_v.sort_values(ascending=False)**power
             es = _get_es(s_s_v, gs, statistic=statistic)
 
             if 0 < n_permutations:  # Compute permutation-normalized
@@ -83,7 +84,7 @@ def _get_es(sv, gs, statistic='Kolmogorov-Smirnov'):
     # not (miss)
     in_ = in1d(asarray(sv.index), gs, assume_unique=True)
 
-    # Score: values-at-hits / sum(values-at-hits) - is-miss's / number-of-misses
+    # Score: values-at-hits / sum(values-at-hits) - is-miss' / number-of-misses
     s = in_.astype(int) * sv / sum(sv.ix[in_]) - (1 - in_.astype(int)) / (
         in_.size - sum(in_))
 
