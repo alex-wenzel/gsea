@@ -2,7 +2,7 @@ from numpy import asarray, cumsum, empty, in1d, max, mean, min, where
 from numpy.random import shuffle
 from pandas import DataFrame
 
-from .helper.d2 import normalize_2d
+from .dataplay.dataplay.d2 import normalize_2d
 
 
 def convert_genes_to_gene_sets(g_x_s,
