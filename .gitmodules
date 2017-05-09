@@ -1,0 +1,6 @@
+[submodule "gsea/helper"]
+	path = gsea/helper
+	url = https://github.com/KwatME/helper
+[submodule "gsea/dataplay"]
+	path = gsea/dataplay
+	url = https://github.com/KwatME/dataplay
