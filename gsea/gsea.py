@@ -1,4 +1,4 @@
-from numpy import asarray, cumsum, empty, in1d, where
+from numpy import asarray, empty, in1d, where
 from numpy.random import shuffle
 from pandas import DataFrame
 
@@ -88,7 +88,7 @@ def compute_enrichment_score(gene_scores,
     # Compute enrichment score
     if statistic == 'Kolmogorov-Smirnov':
 
-        cs = cumsum(y)
+        cs = y.cumsum()
 
         max_es = cs.max()
         min_es = cs.min()
