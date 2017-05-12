@@ -1,91 +1,107 @@
-from numpy import asarray, cumsum, empty, in1d, max, mean, min, where
+from numpy import asarray, cumsum, empty, in1d, where
 from numpy.random import shuffle
 from pandas import DataFrame
 
-from .dataplay.dataplay.d2 import normalize_2d
+from .dataplay.dataplay.a2d import normalize
 
 
-def convert_genes_to_gene_sets(g_x_s,
-                               gss,
-                               power=1,
-                               statistic='Kolmogorov-Smirnov',
-                               n_permutations=0):
+def single_sample_gsea(gene_x_sample,
+                       gene_sets,
+                       power=1,
+                       statistic='Kolmogorov-Smirnov',
+                       n_permutations=0):
     """
-    Convert Gene-x-Sample ==> Gene-Set-x-Sample.
-    :param g_x_s: DataFrame;
-    :param gss: DataFrame;
-    :param power: number;
-    :param statistic: str;
+    Gene-x-Sample ==> Gene-Set-x-Sample.
+    :param gene_x_sample: DataFrame; (n_genes, n_samples)
+    :param gene_sets: DataFrame;
+    :param power: number; power to raise gene_scores
+    :param statistic: str; 'Kolmogorov-Smirnov' | 'Cumulative Area'
     :param n_permutations: int;
-    :return: DataFrame;
+    :return: DataFrame; (n_gene_sets, n_samples)
     """
 
     # Rank normalize columns
-    g_x_s = normalize_2d(g_x_s, 'rank', axis=0) / g_x_s.shape[0]
+    # TODO: Check if multiplying by 10000 is needed
+    g_x_s = normalize(gene_x_sample, 'rank', axis=0) / gene_x_sample.shape[0]
 
     # Make Gene-Set-x-Sample place holder
-    gs_x_s = DataFrame(index=gss.index, columns=g_x_s.columns)
+    gs_x_s = DataFrame(index=gene_sets.index, columns=g_x_s.columns)
 
-    # Loop over gene sets
-    for gs_n, gs in gss.iterrows():
+    # For each gene set
+    for gs_n, gs in gene_sets.iterrows():
         print('Computing {} enrichment ...'.format(gs_n))
 
-        gs = asarray(gs.dropna())
+        gs.dropna(inplace=True)
 
-        # Loop over samples
-        for s_n, s_v in g_x_s.items():
+        # For each sample
+        for s_n, s in g_x_s.items():
 
-            # Sort sample values from high to low and compute enrichment score
-            s_s_v = s_v.sort_values(ascending=False)**power
-            es = _get_es(s_s_v, gs, statistic=statistic)
+            # Compute enrichment score (ES)
+            es = compute_enrichment_score(
+                s, gs, power=power, statistic=statistic)
 
-            if 0 < n_permutations:  # Compute permutation-normalized
-                # enrichment score
-                p_ess = empty(n_permutations)
-                p_s_v = s_s_v.copy()
+            if 0 < n_permutations:  # Score is permutation-normalized ES
+
+                # ESs computed with permuted sample gene scores
+                ess = empty(n_permutations)
+
                 for i in range(n_permutations):
-                    # Permute sample values and compute enrichment score
-                    shuffle(p_s_v)
-                    p_ess[i] = _get_es(p_s_v, gs, statistic=statistic)
+                    # Permute
+                    shuffle(s)
+                    # Compute ES
+                    ess[i] = compute_enrichment_score(
+                        s, gs, power=power, statistic=statistic)
 
                 # Compute permutation-normalized enrichment score
-                gs_x_s.ix[gs_n, s_n] = es / mean(p_ess)
+                gs_x_s.ix[gs_n, s_n] = es / ess.mean()
 
-            else:  # Use enrichment score instead of permutation-normalized
-                # enrichment score
+            else:  # Score is ES
                 gs_x_s.ix[gs_n, s_n] = es
 
     return gs_x_s
 
 
-def _get_es(sv, gs, statistic='Kolmogorov-Smirnov'):
+def compute_enrichment_score(gene_scores,
+                             gene_set_genes,
+                             power=1,
+                             statistic='Kolmogorov-Smirnov'):
     """
-    Compute enrichment score: "Is sorted values enriched in gene set?".
-    :param sv: Series; sorted values
-    :param gs: array; gene set
-    :param statistic: str;
+
+    :param gene_scores: Series; (n_genes_with_score)
+    :param gene_set_genes: iterable; (n_genes)
+    :param power: number; power to raise gene_scores
+    :param statistic: str; 'Kolmogorov-Smirnov' | 'Cumulative Area'
     :return: float; enrichment score
     """
 
-    # Check if each gene (in the sorted order) is in the gene set (hit) or
-    # not (miss)
-    in_ = in1d(asarray(sv.index), gs, assume_unique=True)
+    # Copy and sort gene_scores
+    gss = gene_scores.sort_values(ascending=False)**power
+
+    # Check if gene_scores genes are in gene_set_genes
+    in_ = in1d(gss.index, gene_set_genes, assume_unique=True)
+    in_int = in_.astype(int)
 
     # Score: values-at-hits / sum(values-at-hits) - is-miss' / number-of-misses
-    s = in_.astype(int) * sv / sum(sv.ix[in_]) - (1 - in_.astype(int)) / (
-        in_.size - sum(in_))
-
-    # Sum over scores
-    cs = cumsum(s)
+    gss = asarray(gss)
+    y = (gss * in_int / gss[in_].sum()) - (1 - in_int) / (in_.size - in_.sum())
 
     # Compute enrichment score
-    max_es = max(cs)
-    min_es = min(cs)
     if statistic == 'Kolmogorov-Smirnov':
-        es = where(abs(min_es) < abs(max_es), max_es, min_es)
-    else:
-        raise ValueError('Not implemented!')
 
+        cs = cumsum(y)
+
+        max_es = cs.max()
+        min_es = cs.min()
+
+        es = where(abs(min_es) < abs(max_es), max_es, min_es)
+
+    elif statistic == 'Cumulative Area':
+        pass
+
+    else:
+        raise ValueError('Unknown statistic: {}.'.format(statistic))
+
+    # TODO: Plot results
     # mpl.pyplot.figure(figsize=(8, 5))
     #     ax = mpl.pyplot.gca()
     #     ax.plot(range(in_.size), in_, color='black', alpha=0.16)
