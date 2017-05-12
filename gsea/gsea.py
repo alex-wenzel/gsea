@@ -1,4 +1,4 @@
-from numpy import asarray, cumsum, empty, in1d, where
+from numpy import asarray, empty, in1d, where
 from numpy.random import shuffle
 from pandas import DataFrame
 
@@ -22,19 +22,19 @@ def single_sample_gsea(gene_x_sample,
 
     # Rank normalize columns
     # TODO: Check if multiplying by 10000 is needed
-    g_x_s = normalize(gene_x_sample, 'rank', axis=0) / gene_x_sample.shape[0]
+    g_x_s = normalize(gene_x_sample, 'rank', axis=0)
 
     # Make Gene-Set-x-Sample place holder
     gs_x_s = DataFrame(index=gene_sets.index, columns=g_x_s.columns)
 
     # For each gene set
-    for gs_n, gs in gene_sets.iterrows():
-        print('Computing {} enrichment ...'.format(gs_n))
+    for gs_i, gs in gene_sets.iterrows():
+        print('Computing {} enrichment ...'.format(gs_i))
 
         gs.dropna(inplace=True)
 
         # For each sample
-        for s_n, s in g_x_s.items():
+        for s_i, s in g_x_s.items():
 
             # Compute enrichment score (ES)
             es = compute_enrichment_score(
@@ -53,10 +53,10 @@ def single_sample_gsea(gene_x_sample,
                         s, gs, power=power, statistic=statistic)
 
                 # Compute permutation-normalized enrichment score
-                gs_x_s.ix[gs_n, s_n] = es / ess.mean()
+                gs_x_s.ix[gs_i, s_i] = es / ess.mean()
 
             else:  # Score is ES
-                gs_x_s.ix[gs_n, s_n] = es
+                gs_x_s.ix[gs_i, s_i] = es
 
     return gs_x_s
 
@@ -66,8 +66,8 @@ def compute_enrichment_score(gene_scores,
                              power=1,
                              statistic='Kolmogorov-Smirnov'):
     """
-
-    :param gene_scores: Series; (n_genes_with_score)
+    Compute how much gene_scores enriches gene_set_genes.
+    :param gene_scores: Series; (n_genes_with_score); index must be genes
     :param gene_set_genes: iterable; (n_genes)
     :param power: number; power to raise gene_scores
     :param statistic: str; 'Kolmogorov-Smirnov' | 'Cumulative Area'
@@ -88,7 +88,7 @@ def compute_enrichment_score(gene_scores,
     # Compute enrichment score
     if statistic == 'Kolmogorov-Smirnov':
 
-        cs = cumsum(y)
+        cs = y.cumsum()
 
         max_es = cs.max()
         min_es = cs.min()
