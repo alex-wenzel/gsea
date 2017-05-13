@@ -4,3 +4,6 @@
 [submodule "gsea/dataplay"]
 	path = gsea/dataplay
 	url = https://github.com/KwatME/dataplay
+[submodule "gsea/file"]
+	path = gsea/file
+	url = https://github.com/KwatME/file

@@ -3,13 +3,16 @@ from numpy.random import shuffle
 from pandas import DataFrame
 
 from .dataplay.dataplay.a2d import normalize
+from .file.file.file import establish_path
+from .file.file.gct import write_gct
 
 
 def single_sample_gsea(gene_x_sample,
                        gene_sets,
                        power=1,
                        statistic='Kolmogorov-Smirnov',
-                       n_permutations=0):
+                       n_permutations=0,
+                       file_path=None):
     """
     Gene-x-Sample ==> Gene-Set-x-Sample.
     :param gene_x_sample: DataFrame; (n_genes, n_samples)
@@ -57,6 +60,10 @@ def single_sample_gsea(gene_x_sample,
 
             else:  # Score is ES
                 gs_x_s.ix[gs_i, s_i] = es
+
+    if file_path:
+        establish_path(file_path)
+        write_gct(gs_x_s, file_path)
 
     return gs_x_s
 
