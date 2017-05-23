@@ -1,4 +1,4 @@
-from numpy import asarray, empty, in1d, where
+from numpy import asarray, empty, in1d, trapz, where
 from numpy.random import shuffle
 from pandas import DataFrame
 
@@ -9,26 +9,38 @@ from .file.file.gct import write_gct
 
 def single_sample_gsea(gene_x_sample,
                        gene_sets,
+                       normalization='rank',
+                       post_normalization_scale=1,
                        power=1,
-                       statistic='Kolmogorov-Smirnov',
+                       statistic='Cumulative Area',
                        n_permutations=0,
                        file_path=None):
     """
     Gene-x-Sample ==> Gene-Set-x-Sample.
     :param gene_x_sample: DataFrame; (n_genes, n_samples)
     :param gene_sets: DataFrame;
+    :param normalization: None | 'rank'
+    :param post_normalization_scale: number; scaling factor after normalization
     :param power: number; power to raise gene_scores
-    :param statistic: str; 'Kolmogorov-Smirnov' | 'Cumulative Area'
+    :param statistic: str; 'Cumulative Area' | 'Kolmogorov-Smirnov'
     :param n_permutations: int;
+    :param file_path: str;
     :return: DataFrame; (n_gene_sets, n_samples)
     """
 
     # Rank normalize columns
-    # TODO: Check if multiplying by 10000 is needed
-    g_x_s = normalize(gene_x_sample, 'rank', axis=0)
+    if normalization:
+        g_x_s = normalize(
+            gene_x_sample, 'rank', axis=0) * post_normalization_scale
+    else:
+        g_x_s = gene_x_sample.copy()
+
+    # Scale
+    g_x_s *= post_normalization_scale
 
     # Make Gene-Set-x-Sample place holder
-    gs_x_s = DataFrame(index=gene_sets.index, columns=g_x_s.columns)
+    gs_x_s = DataFrame(
+        index=gene_sets.index, columns=g_x_s.columns, dtype=float)
 
     # For each gene set
     for gs_i, gs in gene_sets.iterrows():
@@ -93,9 +105,9 @@ def compute_enrichment_score(gene_scores,
     y = (gss * in_int / gss[in_].sum()) - (1 - in_int) / (in_.size - in_.sum())
 
     # Compute enrichment score
-    if statistic == 'Kolmogorov-Smirnov':
+    cs = y.cumsum()
 
-        cs = y.cumsum()
+    if statistic == 'Kolmogorov-Smirnov':
 
         max_es = cs.max()
         min_es = cs.min()
@@ -103,17 +115,18 @@ def compute_enrichment_score(gene_scores,
         es = where(abs(min_es) < abs(max_es), max_es, min_es)
 
     elif statistic == 'Cumulative Area':
-        pass
+        es = trapz(cs)
 
     else:
         raise ValueError('Unknown statistic: {}.'.format(statistic))
 
-    # TODO: Plot results
+    # # TODO: Plot
+    # import matplotlib as mpl
     # mpl.pyplot.figure(figsize=(8, 5))
-    #     ax = mpl.pyplot.gca()
-    #     ax.plot(range(in_.size), in_, color='black', alpha=0.16)
-    #     ax.plot(range(in_.size), s)
-    #     ax.plot(range(in_.size), cs)
-    #     mpl.pyplot.show()
+    # ax = mpl.pyplot.gca()
+    # ax.plot(range(in_.size), in_, color='black', alpha=0.16)
+    # ax.plot(range(in_.size), y)
+    # ax.plot(range(in_.size), cs)
+    # mpl.pyplot.show()
 
     return es
