@@ -1,4 +1,4 @@
-from numpy import asarray, empty, in1d, trapz, where
+from numpy import abs, asarray, empty, in1d, trapz, where
 from numpy.random import shuffle
 from pandas import DataFrame
 
@@ -20,7 +20,6 @@ def single_sample_gsea(gene_x_sample,
     :param gene_x_sample: DataFrame; (n_genes, n_samples)
     :param gene_sets: DataFrame;
     :param normalization: None | 'rank'
-    :param post_normalization_scale: number; scaling factor after normalization
     :param power: number; power to raise gene_scores
     :param statistic: str; 'Cumulative Area' | 'Kolmogorov-Smirnov'
     :param n_permutations: int;
@@ -34,7 +33,7 @@ def single_sample_gsea(gene_x_sample,
     else:
         g_x_s = gene_x_sample.copy()
 
-    # Scale
+    # TODO: Remove
     g_x_s *= post_normalization_scale
 
     # Make Gene-Set-x-Sample place holder
@@ -50,11 +49,9 @@ def single_sample_gsea(gene_x_sample,
         # For each sample
         for s_i, s in g_x_s.items():
 
-            # Copy and sort gene_scores
-            s = s.sort_values(ascending=False)**power
-
             # Compute enrichment score (ES)
-            es = compute_enrichment_score(s, gs, statistic=statistic)
+            es = compute_enrichment_score(
+                s, gs, power=power, statistic=statistic)
 
             if 0 < n_permutations:  # Score is permutation-normalized ES
 
@@ -66,7 +63,11 @@ def single_sample_gsea(gene_x_sample,
                     shuffle(s)
                     # Compute ES
                     ess[i] = compute_enrichment_score(
-                        s, gs, statistic=statistic)
+                        s,
+                        gs,
+                        sort_gene_scores=False,
+                        power=power,
+                        statistic=statistic)
 
                 # Compute permutation-normalized enrichment score
                 gs_x_s.ix[gs_i, s_i] = es / ess.mean()
@@ -83,22 +84,33 @@ def single_sample_gsea(gene_x_sample,
 
 def compute_enrichment_score(gene_scores,
                              gene_set_genes,
+                             sort_gene_scores=True,
+                             power=1,
                              statistic='Kolmogorov-Smirnov'):
     """
     Compute how much gene_scores enriches gene_set_genes.
-    :param gene_scores: Series; (n_genes_with_score); index must be genes
+    :param gene_scores: Series; (n_genes_with_score); sorted and gene indexed
     :param gene_set_genes: iterable; (n_genes)
+    :param sort_gene_scores: bool; whether to sort gene_scores
+    :param power: number; power to raise gene_scores
     :param statistic: str; 'Kolmogorov-Smirnov' | 'Cumulative Area'
     :return: float; enrichment score
     """
 
+    if sort_gene_scores:  # Sort gene_scores
+        gss = gene_scores.sort_values(ascending=False)
+    else:
+        gss = gene_scores.copy()
+
     # Check if gene_scores genes are in gene_set_genes
-    in_ = in1d(gene_scores.index, gene_set_genes, assume_unique=True)
+    in_ = in1d(gss.index, gene_set_genes, assume_unique=True)
     in_int = in_.astype(int)
 
-    # Score: values-at-hits / sum(values-at-hits) - is-miss' / number-of-misses
-    gss = asarray(gene_scores)
-    y = (gss * in_int / gss[in_].sum()) - (1 - in_int) / (in_.size - in_.sum())
+    gss = abs(asarray(gss))**power
+
+    hit = (gss * in_int) / gss[in_].sum()
+    miss = (1 - in_int) / (in_.size - in_.sum())
+    y = hit - miss
 
     # Compute enrichment score
     cs = y.cumsum()
