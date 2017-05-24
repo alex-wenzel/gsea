@@ -9,121 +9,114 @@ from .file.file.gct import write_gct
 
 def single_sample_gsea(gene_x_sample,
                        gene_sets,
-                       normalization='rank',
-                       post_normalization_scale=1,
+                       normalization=None,
                        power=1,
-                       statistic='Cumulative Area',
-                       n_permutations=0,
+                       statistic='AUC',
                        file_path=None):
     """
     Gene-x-Sample ==> Gene-Set-x-Sample.
     :param gene_x_sample: DataFrame; (n_genes, n_samples)
-    :param gene_sets: DataFrame;
+    :param gene_sets: DataFrame; (n_gene_sets, max_gene_set_size)
     :param normalization: None | 'rank'
     :param power: number; power to raise gene_scores
-    :param statistic: str; 'Cumulative Area' | 'Kolmogorov-Smirnov'
-    :param n_permutations: int;
+    :param statistic: str; 'AUC' (Area Under Curve) | 'KS' (Kolmogorov-Smirnov)
     :param file_path: str;
     :return: DataFrame; (n_gene_sets, n_samples)
     """
 
-    # Rank normalize columns
-    if normalization:
-        g_x_s = normalize(gene_x_sample, 'rank', axis=0)
+    # Rank normalize sample columns
+    if normalization == 'rank':
+        gene_x_sample = normalize(gene_x_sample, 'rank', axis=0)
     else:
-        g_x_s = gene_x_sample.copy()
-
-    # TODO: Remove
-    g_x_s *= post_normalization_scale
+        gene_x_sample = gene_x_sample.copy()
 
     # Make Gene-Set-x-Sample place holder
-    gs_x_s = DataFrame(
-        index=gene_sets.index, columns=g_x_s.columns, dtype=float)
+    gene_set_x_sample = DataFrame(
+        index=gene_sets.index, columns=gene_x_sample.columns, dtype=float)
 
     # For each gene set
-    for gs_i, gs in gene_sets.iterrows():
-        print('Computing {} enrichment ...'.format(gs_i))
+    for gene_set, gene_set_genes in gene_sets.iterrows():
+        print('Computing {} enrichment ...'.format(gene_set))
 
-        gs.dropna(inplace=True)
+        gene_set_genes.dropna(inplace=True)
 
-        # For each sample
-        for s_i, s in g_x_s.items():
-
-            # Compute enrichment score (ES)
-            es = compute_enrichment_score(
-                s, gs, power=power, statistic=statistic)
-
-            if 0 < n_permutations:  # Score is permutation-normalized ES
-
-                # ESs computed with permuted sample gene scores
-                ess = empty(n_permutations)
-
-                for i in range(n_permutations):
-                    # Permute
-                    shuffle(s)
-                    # Compute ES
-                    ess[i] = compute_enrichment_score(
-                        s,
-                        gs,
-                        sort_gene_scores=False,
-                        power=power,
-                        statistic=statistic)
-
-                # Compute permutation-normalized enrichment score
-                gs_x_s.ix[gs_i, s_i] = es / ess.mean()
-
-            else:  # Score is ES
-                gs_x_s.ix[gs_i, s_i] = es
+        # Compute enrichment score (ES) for each sample
+        for sample, gene_scores in gene_x_sample.items():
+            gene_set_x_sample.ix[gene_set, sample] = compute_enrichment_score(
+                gene_scores, gene_set_genes, power=power, statistic=statistic)
 
     if file_path:
         establish_path(file_path)
-        write_gct(gs_x_s, file_path)
+        write_gct(gene_set_x_sample, file_path)
 
-    return gs_x_s
+    return gene_set_x_sample
+
+
+def permute_and_compute_enrichment_score(gene_scores,
+                                         gene_set_genes,
+                                         n_permutations,
+                                         power=1,
+                                         statistic='AUC'):
+    """
+    Compute how much permuted gene_scores enriches gene_set_genes.
+    :param gene_scores: Series; (n_genes_with_score); sorted and gene indexed
+    :param gene_set_genes: iterable; (n_genes)
+    :param power: number; power to raise gene_scores
+    :param statistic: str; 'AUC' (Area Under Curve) | 'KS' (Kolmogorov-Smirnov)
+    :return: array; (n_permutations)
+    """
+
+    enrichment_scores = empty(n_permutations)
+
+    for i in range(n_permutations):
+
+        # TODO: Speed up
+        # Permute
+        shuffle(gene_scores)
+
+        # Compute ES
+        enrichment_scores[i] = compute_enrichment_score(
+            gene_scores, gene_set_genes, power=power, statistic=statistic)
+
+    return enrichment_scores
 
 
 def compute_enrichment_score(gene_scores,
                              gene_set_genes,
-                             sort_gene_scores=True,
                              power=1,
                              statistic='Kolmogorov-Smirnov'):
     """
     Compute how much gene_scores enriches gene_set_genes.
     :param gene_scores: Series; (n_genes_with_score); sorted and gene indexed
     :param gene_set_genes: iterable; (n_genes)
-    :param sort_gene_scores: bool; whether to sort gene_scores
     :param power: number; power to raise gene_scores
-    :param statistic: str; 'Kolmogorov-Smirnov' | 'Cumulative Area'
+    :param statistic: str; 'AUC' (Area Under Curve) | 'KS' (Kolmogorov-Smirnov)
     :return: float; enrichment score
     """
 
-    if sort_gene_scores:  # Sort gene_scores
-        gss = gene_scores.sort_values(ascending=False)
-    else:
-        gss = gene_scores.copy()
+    gene_scores = gene_scores.sort_values(ascending=False)
 
     # Check if gene_scores genes are in gene_set_genes
-    in_ = in1d(gss.index, gene_set_genes, assume_unique=True)
+    in_ = in1d(gene_scores.index, gene_set_genes, assume_unique=True)
     in_int = in_.astype(int)
 
-    gss = abs(asarray(gss))**power
+    if power != 1:
+        gene_scores = abs(asarray(gene_scores))**power
 
-    hit = (gss * in_int) / gss[in_].sum()
+    hit = (gene_scores * in_int) / gene_scores[in_].sum()
     miss = (1 - in_int) / (in_.size - in_.sum())
     y = hit - miss
 
     # Compute enrichment score
-    cs = y.cumsum()
+    cumulative_sums = y.cumsum()
 
-    if statistic == 'Kolmogorov-Smirnov':
+    if statistic == 'AUC':
+        enrichment_score = trapz(cumulative_sums)
 
-        max_es = cs.max()
-        min_es = cs.min()
-
-        es = where(abs(min_es) < abs(max_es), max_es, min_es)
-
-    elif statistic == 'Cumulative Area':
-        es = trapz(cs)
+    elif statistic == 'KS':
+        max_ = cumulative_sums.max()
+        min_ = cumulative_sums.min()
+        enrichment_score = where(abs(min_) < abs(max_), max_, min_)
 
     else:
         raise ValueError('Unknown statistic: {}.'.format(statistic))
@@ -134,7 +127,7 @@ def compute_enrichment_score(gene_scores,
     # ax = mpl.pyplot.gca()
     # ax.plot(range(in_.size), in_, color='black', alpha=0.16)
     # ax.plot(range(in_.size), y)
-    # ax.plot(range(in_.size), cs)
+    # ax.plot(range(in_.size), cumulative_sums)
     # mpl.pyplot.show()
 
-    return es
+    return enrichment_score
