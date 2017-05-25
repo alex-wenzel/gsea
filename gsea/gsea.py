@@ -1,4 +1,4 @@
-from numpy import abs, asarray, empty, in1d, trapz, where
+from numpy import abs, asarray, empty, in1d, where
 from numpy.random import shuffle
 from pandas import DataFrame
 
@@ -111,7 +111,7 @@ def compute_enrichment_score(gene_scores,
     cumulative_sums = y.cumsum()
 
     if statistic == 'AUC':
-        enrichment_score = trapz(cumulative_sums)
+        enrichment_score = cumulative_sums.sum()
 
     elif statistic == 'KS':
         max_ = cumulative_sums.max()
@@ -121,13 +121,13 @@ def compute_enrichment_score(gene_scores,
     else:
         raise ValueError('Unknown statistic: {}.'.format(statistic))
 
-    # # TODO: Plot
-    # import matplotlib as mpl
-    # mpl.pyplot.figure(figsize=(8, 5))
-    # ax = mpl.pyplot.gca()
-    # ax.plot(range(in_.size), in_, color='black', alpha=0.16)
-    # ax.plot(range(in_.size), y)
-    # ax.plot(range(in_.size), cumulative_sums)
-    # mpl.pyplot.show()
+    # TODO: Plot
+    import matplotlib as mpl
+    mpl.pyplot.figure(figsize=(8, 5))
+    ax = mpl.pyplot.gca()
+    ax.plot(range(in_.size), in_, color='#808080', alpha=0.16)
+    ax.plot(range(in_.size), y, color='#9017E6')
+    ax.plot(range(in_.size), cumulative_sums, color='#20D9BA')
+    mpl.pyplot.show()
 
     return enrichment_score
