@@ -26,7 +26,16 @@ def single_sample_gsea(gene_x_sample,
 
     # Rank normalize sample columns
     if normalization == 'rank':
-        gene_x_sample = normalize(gene_x_sample, 'rank', axis=0)
+
+        # TODO: Change rank method to 'dense'
+        gene_x_sample = DataFrame(
+            normalize(gene_x_sample, 'rank', axis=0, rank_method='average'),
+            index=gene_x_sample.index,
+            columns=gene_x_sample.columns)
+
+        # TODO: Remove
+        gene_x_sample = gene_x_sample * 10000 / gene_x_sample.shape[0]
+
     else:
         gene_x_sample = gene_x_sample.copy()
 
@@ -93,7 +102,6 @@ def compute_enrichment_score(gene_scores,
     :param statistic: str; 'AUC' (Area Under Curve) | 'KS' (Kolmogorov-Smirnov)
     :return: float; enrichment score
     """
-
     gene_scores = gene_scores.sort_values(ascending=False)
 
     # Check if gene_scores genes are in gene_set_genes
