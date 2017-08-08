@@ -25,10 +25,18 @@ def single_sample_gsea(gene_x_sample,
     """
 
     # Rank normalize sample columns
-    if normalization == 'rank':
-        gene_x_sample = normalize(gene_x_sample, 'rank', axis=0)
-    else:
+    if normalization == 'raw':
         gene_x_sample = gene_x_sample.copy()
+
+    elif normalization == 'rank':
+        # TODO: Change rank method to 'dense'
+        gene_x_sample = DataFrame(
+            normalize(gene_x_sample, 'rank', axis=0, rank_method='average'),
+            index=gene_x_sample.index,
+            columns=gene_x_sample.columns)
+
+    else:
+        raise ValueError('Unknown statistic: {}.'.format(statistic))
 
     # Make Gene-Set-x-Sample place holder
     gene_set_x_sample = DataFrame(
@@ -84,7 +92,7 @@ def permute_and_compute_enrichment_score(gene_scores,
 def compute_enrichment_score(gene_scores,
                              gene_set_genes,
                              power=1,
-                             statistic='Kolmogorov-Smirnov'):
+                             statistic='AUC'):
     """
     Compute how much gene_scores enriches gene_set_genes.
     :param gene_scores: Series; (n_genes_with_score); sorted and gene indexed
@@ -93,7 +101,6 @@ def compute_enrichment_score(gene_scores,
     :param statistic: str; 'AUC' (Area Under Curve) | 'KS' (Kolmogorov-Smirnov)
     :return: float; enrichment score
     """
-
     gene_scores = gene_scores.sort_values(ascending=False)
 
     # Check if gene_scores genes are in gene_set_genes
