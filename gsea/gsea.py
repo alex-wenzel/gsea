@@ -3,7 +3,7 @@ from numpy.random import shuffle
 from pandas import DataFrame
 
 from .dataplay.dataplay.a2d import normalize
-from .file.file.file import establish_path
+from .helper.helper.file import establish_path
 from .file.file.gct import write_gct
 
 
