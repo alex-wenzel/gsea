@@ -18,7 +18,7 @@ def single_sample_gsea(gene_x_sample,
     Arguments:
         gene_x_sample (DataFrame): (n_genes, n_samples)
         gene_sets (DataFrame): (n_gene_sets, max_gene_set_size)
-        normalization (str): 'rank'
+        normalization (str): None or 'rank'
         power (number): power to raise gene_scores
         statistic (str): 'AUC' (Area Under Curve) | 'KS' (Kolmogorov-Smirnov)
         file_path (str):
