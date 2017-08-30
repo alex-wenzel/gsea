@@ -3,8 +3,8 @@ from numpy.random import shuffle
 from pandas import DataFrame
 
 from .dataplay.dataplay.a2d import normalize
-from .helper.helper.file import establish_path
 from .file.file.gct import write_gct
+from .helper.helper.file import establish_path
 
 
 def single_sample_gsea(gene_x_sample,
@@ -15,28 +15,26 @@ def single_sample_gsea(gene_x_sample,
                        file_path=None):
     """
     Gene-x-Sample ==> Gene-Set-x-Sample.
-    :param gene_x_sample: DataFrame; (n_genes, n_samples)
-    :param gene_sets: DataFrame; (n_gene_sets, max_gene_set_size)
-    :param normalization: None | 'rank'
-    :param power: number; power to raise gene_scores
-    :param statistic: str; 'AUC' (Area Under Curve) | 'KS' (Kolmogorov-Smirnov)
-    :param file_path: str;
-    :return: DataFrame; (n_gene_sets, n_samples)
+    Arguments:
+        gene_x_sample (DataFrame): (n_genes, n_samples)
+        gene_sets (DataFrame): (n_gene_sets, max_gene_set_size)
+        normalization (str): 'rank'
+        power (number): power to raise gene_scores
+        statistic (str): 'AUC' (Area Under Curve) | 'KS' (Kolmogorov-Smirnov)
+        file_path (str):
+    Returns:
+        DataFrame: (n_gene_sets, n_samples)
     """
 
     # Rank normalize sample columns
-    if normalization == 'raw':
-        gene_x_sample = gene_x_sample.copy()
-
-    elif normalization == 'rank':
+    if normalization == 'rank':
         # TODO: Change rank method to 'dense'
         gene_x_sample = DataFrame(
             normalize(gene_x_sample, 'rank', axis=0, rank_method='average'),
             index=gene_x_sample.index,
             columns=gene_x_sample.columns)
-
     else:
-        raise ValueError('Unknown statistic: {}.'.format(statistic))
+        gene_x_sample = gene_x_sample.copy()
 
     # Make Gene-Set-x-Sample place holder
     gene_set_x_sample = DataFrame(
@@ -67,11 +65,13 @@ def permute_and_compute_enrichment_score(gene_scores,
                                          statistic='AUC'):
     """
     Compute how much permuted gene_scores enriches gene_set_genes.
-    :param gene_scores: Series; (n_genes_with_score); sorted and gene indexed
-    :param gene_set_genes: iterable; (n_genes)
-    :param power: number; power to raise gene_scores
-    :param statistic: str; 'AUC' (Area Under Curve) | 'KS' (Kolmogorov-Smirnov)
-    :return: array; (n_permutations)
+    Arguments:
+        gene_scores (Series): (n_genes_with_score); sorted and gene indexed
+        gene_set_genes (iterable): (n_genes)
+        power (number): power to raise gene_scores
+        statistic (str): 'AUC' (Area Under Curve) | 'KS' (Kolmogorov-Smirnov)
+    Returns:
+        array: (n_permutations)
     """
 
     enrichment_scores = empty(n_permutations)
@@ -95,11 +95,13 @@ def compute_enrichment_score(gene_scores,
                              statistic='AUC'):
     """
     Compute how much gene_scores enriches gene_set_genes.
-    :param gene_scores: Series; (n_genes_with_score); sorted and gene indexed
-    :param gene_set_genes: iterable; (n_genes)
-    :param power: number; power to raise gene_scores
-    :param statistic: str; 'AUC' (Area Under Curve) | 'KS' (Kolmogorov-Smirnov)
-    :return: float; enrichment score
+    Arguments:
+        gene_scores (Series): (n_genes_with_score); sorted and gene indexed
+        gene_set_genes (iterable): (n_genes)
+        power (number): power to raise gene_scores
+        statistic (str): 'AUC' (Area Under Curve) | 'KS' (Kolmogorov-Smirnov)
+    Returns:
+        float: enrichment score
     """
     gene_scores = gene_scores.sort_values(ascending=False)
 
@@ -128,7 +130,7 @@ def compute_enrichment_score(gene_scores,
     else:
         raise ValueError('Unknown statistic: {}.'.format(statistic))
 
-    # # TODO: Plot
+    # TODO: Plot
     # import matplotlib as mpl
     # mpl.pyplot.figure(figsize=(8, 5))
     # ax = mpl.pyplot.gca()
