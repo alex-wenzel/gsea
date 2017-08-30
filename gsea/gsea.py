@@ -18,7 +18,7 @@ def single_sample_gsea(gene_x_sample,
     Arguments:
         gene_x_sample (DataFrame): (n_genes, n_samples)
         gene_sets (DataFrame): (n_gene_sets, max_gene_set_size)
-        normalization (str): None or 'rank'
+        normalization (str): None | 'rank'
         power (number): power to raise gene_scores
         statistic (str): 'AUC' (Area Under Curve) | 'KS' (Kolmogorov-Smirnov)
         file_path (str):
@@ -78,7 +78,6 @@ def permute_and_compute_enrichment_score(gene_scores,
 
     for i in range(n_permutations):
 
-        # TODO: Speed up
         # Permute
         shuffle(gene_scores)
 
