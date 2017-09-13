@@ -4,7 +4,7 @@ from pandas import DataFrame
 
 from .dataplay.dataplay.a2d import normalize
 from .file.file.gct import write_gct
-from .helper.helper.file import establish_path
+from .helper.helper.path import establish_path
 
 
 def single_sample_gsea(gene_x_sample,
