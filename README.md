@@ -2,17 +2,19 @@
 
 Library for analyzing gene-set enrichment :zap:
 
-# Installation
-
-Install:
+## Install
 
 ```
 git clone --recursive https://github.com/KwatME/gsea.git
 ```
 
-Update:
+## Update
 
 ```
 git pull
 git submodule update --recursive --remote --init
 ```
+
+## Get started
+
+Look at `notebooks/run_single_sample_gsea.ipynb` for an example.
