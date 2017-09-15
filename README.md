@@ -1,6 +1,6 @@
 # GSEA
 
-Library for analyzing gene-set enrichment :zap:
+Library for gene-set enrichment analysis :zap:
 
 ## Install
 
