@@ -1,9 +1,9 @@
 from pandas import DataFrame
 
+from .array_nd.array_nd.array_2d import normalize
 from .compute_enrichment_score import compute_enrichment_score
-from .dataplay.dataplay.a2d import normalize
 from .file.file.gct import write_gct
-from .helper.helper.path import establish_path
+from .support.support.path import establish_path
 
 
 def run_single_sample_gsea(gene_x_sample,
