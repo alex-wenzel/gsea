@@ -28,10 +28,12 @@ def run_single_sample_gsea(gene_x_sample,
     # Rank normalize sample columns
     if normalization == 'rank':
         # TODO: Change rank method to 'dense'
-        gene_x_sample = DataFrame(
-            normalize(gene_x_sample, 'rank', axis=0, rank_method='average'),
-            index=gene_x_sample.index,
-            columns=gene_x_sample.columns)
+            index = gene_x_sample.index
+            columns = gene_x_sample.columns
+            gene_x_sample = DataFrame(
+                normalize(gene_x_sample.as_matrix(), 'rank', axis=0, rank_method='average'),
+                index=index,
+                columns=columns)
     else:
         gene_x_sample = gene_x_sample.copy()
 
