@@ -12,7 +12,6 @@ git clone --recursive https://github.com/kwatme/gsea.git
 
 ```
 git pull
-git submodule update --recursive --remote --init
 ```
 
 ## Get started
