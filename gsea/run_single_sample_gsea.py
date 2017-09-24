@@ -1,8 +1,7 @@
 from pandas import DataFrame
 
-from .array_nd.array_nd.array_2d import normalize
+from .array_nd.array_nd.normalize_2d_array import normalize_2d_array
 from .compute_enrichment_score import compute_enrichment_score
-from .file.file.gct import write_gct
 from .support.support.path import establish_path
 
 
@@ -32,7 +31,7 @@ def run_single_sample_gsea(gene_x_sample,
         columns = gene_x_sample.columns
 
         gene_x_sample = DataFrame(
-            normalize(
+            normalize_2d_array(
                 gene_x_sample.values, 'rank', axis=0, rank_method='average'),
             index=index,
             columns=columns)
@@ -56,6 +55,6 @@ def run_single_sample_gsea(gene_x_sample,
 
     if file_path:
         establish_path(file_path)
-        write_gct(gene_set_x_sample, file_path)
+        gene_set_x_sample.to_csv(file_path, sep='\t')
 
     return gene_set_x_sample
