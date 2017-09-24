@@ -41,9 +41,9 @@ def compute_enrichment_score(gene_scores,
         enrichment_score = where(abs(min_) < abs(max_), max_, min_)
 
     else:
-        raise ValueError('Unknown statistic {}.'.format(statistic))
+        raise ValueError('Unknown statistic: {}.'.format(statistic))
 
-    # TODO: Plot
+    # TODO: plot
     # import matplotlib as mpl
     # mpl.pyplot.figure(figsize=(8, 5))
     # ax = mpl.pyplot.gca()
