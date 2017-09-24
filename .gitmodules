@@ -4,6 +4,3 @@
 [submodule "gsea/support"]
 	path = gsea/support
 	url = https://github.com/kwatme/support
-[submodule "gsea/file"]
-	path = gsea/file
-	url = https://github.com/kwatme/file
