@@ -10,7 +10,7 @@ def run_single_sample_gsea(gene_x_sample,
                            gene_sets,
                            normalization=None,
                            power=1,
-                           statistic='AUC',
+                           statistic='auc',
                            file_path=None):
     """
     Gene-x-Sample ==> Gene-Set-x-Sample.
@@ -18,8 +18,8 @@ def run_single_sample_gsea(gene_x_sample,
         gene_x_sample (DataFrame): (n_genes, n_samples)
         gene_sets (DataFrame): (n_gene_sets, max_gene_set_size)
         normalization (str): None | 'rank'
-        power (number): Power to raise gene_scores
-        statistic (str): 'AUC' (Area Under Curve) | 'KS' (Kolmogorov-Smirnov)
+        power (number): power to raise gene_scores
+        statistic (str): 'auc' (area under curve) | 'ks' (Kolmogorov-Smirnov)
         file_path (str):
     Returns:
         DataFrame: (n_gene_sets, n_samples)
@@ -27,7 +27,7 @@ def run_single_sample_gsea(gene_x_sample,
 
     # Rank normalize sample columns
     if normalization == 'rank':
-        # TODO: Change rank method from 'average' to 'dense'
+        # TODO: change rank method from 'average' to 'dense'
         index = gene_x_sample.index
         columns = gene_x_sample.columns
 
