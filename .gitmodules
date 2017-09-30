@@ -1,6 +1,3 @@
-[submodule "gsea/array_nd"]
-	path = gsea/array_nd
-	url = https://github.com/kwatme/array_nd
 [submodule "gsea/support"]
 	path = gsea/support
 	url = https://github.com/kwatme/support
