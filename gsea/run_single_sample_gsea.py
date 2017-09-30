@@ -1,6 +1,6 @@
 from pandas import DataFrame
 
-from .array_nd.array_nd.normalize_2d_array import normalize_2d_array
+from .nd_array.nd_array.normalize_2d_array import normalize_2d_array
 from .compute_enrichment_score import compute_enrichment_score
 from .support.support.path import establish_path
 
