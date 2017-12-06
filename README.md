@@ -4,16 +4,26 @@ Library for gene-set enrichment analysis :zap:
 
 ## Install
 
-```
-git clone --recursive https://github.com/KwatME/gsea.git
+```sh
+pip install gsea
 ```
 
 ## Update
 
 ```
-git pull
+pip install gsea --upgrade
 ```
 
 ## Get started
 
-Look at `notebooks/run_single_sample_gsea.ipynb` for an example.
+```python
+from gsea.run_single_sample_gsea import run_single_sample_gsea
+
+gene_set_x_sample = run_single_sample_gsea(gene_x_sample, gene_sets)
+```
+
+Look at `notebook/run_single_sample_gsea.ipynb`.
+
+## Development
+
+If you find a bug or have any trouble, please [submit an issue](https://github.com/KwatME/gsea/issues) and I'll take care of it.
