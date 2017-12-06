@@ -3,6 +3,7 @@ from os import walk
 from setuptools import setup
 
 NAME = 'gsea'
+URL = 'https://github.com/KwatME/gsea'
 
 packages = []
 for dp, dns, fns in walk(NAME):
@@ -12,8 +13,9 @@ setup(
     name=NAME,
     version='0.0.1',
     description='Gene Set Enrichment Analysis',
-    long_description='Library for gene-set enrichment analysis',
-    url='https://github.com/KwatME/gsea',
+    long_description='Library for gene-set enrichment analysis. See {}.'.
+    format(URL),
+    url=URL,
     author='(Kwat) Huwate Yeerna',
     author_email='kwatme8@gmail.com',
     license='LICENSE',
@@ -25,7 +27,7 @@ setup(
         'Natural Language :: English',
         'Topic :: Scientific/Engineering :: Bio-Informatics',
     ],
-    keywords='Bioinformatics, Genomics, Transcriptome, RNA, Statistics',
+    keywords='Statistics, Bioinformatics, Genomics, Transcriptome, RNA',
     packages=packages,
     python_requires='>=3.3',
     install_requires=[
