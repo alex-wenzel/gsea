@@ -2,13 +2,7 @@
 
 Library for gene-set enrichment analysis :zap:
 
-## Install
-
-```sh
-pip install gsea
-```
-
-## Update
+## Install or update
 
 ```
 pip install gsea --upgrade
