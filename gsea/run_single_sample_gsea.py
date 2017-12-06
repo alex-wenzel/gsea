@@ -28,8 +28,9 @@ def run_single_sample_gsea(gene_x_sample,
     gene_set_x_sample = DataFrame(
         index=gene_sets.index, columns=gene_x_sample.columns, dtype=float)
 
-    for gene_set, gene_set_genes in gene_sets.iterrows():
-        print('Computing {} enrichment ...'.format(gene_set))
+    for i, (gene_set, gene_set_genes) in enumerate(gene_sets.iterrows()):
+        print('({}/{}) Computing {} enrichment ...'.format(
+            i + 1, gene_sets.shape[0], gene_set))
 
         gene_set_genes.dropna(inplace=True)
 
