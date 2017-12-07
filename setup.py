@@ -12,9 +12,8 @@ for dp, dns, fns in walk(NAME):
 setup(
     name=NAME,
     version='0.0.3',
-    description='Gene Set Enrichment Analysis',
-    long_description='Library for gene-set enrichment analysis. See {}.'.
-    format(URL),
+    description='Library for gene-set enrichment analysis.',
+    long_description='See {} to learn more.'.format(URL),
     url=URL,
     author='(Kwat) Huwate Yeerna',
     author_email='kwatme8@gmail.com',
