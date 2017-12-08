@@ -33,13 +33,13 @@ def compute_enrichment_score(gene_scores,
 
     cumulative_sums = y.cumsum()
 
-    if statistic == 'auc':
-        enrichment_score = cumulative_sums.sum()
-
-    elif statistic == 'ks':
+    if statistic == 'ks':
         max_ = cumulative_sums.max()
         min_ = cumulative_sums.min()
         enrichment_score = where(abs(min_) < abs(max_), max_, min_)
+
+    elif statistic == 'auc':
+        enrichment_score = cumulative_sums.sum()
 
     else:
         raise ValueError('Unknown statistic: {}.'.format(statistic))
