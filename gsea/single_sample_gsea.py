@@ -5,14 +5,14 @@ from .nd_array.nd_array.normalize_1d_array import normalize_1d_array
 from .plot_mountain_plot import plot_mountain_plot
 
 
-def compute_enrichment_score(gene_scores,
-                             gene_set_genes,
-                             normalization_method='rank',
-                             power=1,
-                             statistic='ks',
-                             plot=False,
-                             title=None,
-                             plot_file_path=None):
+def single_sample_gsea(gene_scores,
+                       gene_set_genes,
+                       normalization_method='rank',
+                       power=1,
+                       statistic='ks',
+                       plot=False,
+                       title=None,
+                       plot_file_path=None):
     """
     Compute how much gene scores enrich gene-set genes.
     Arguments:
@@ -29,14 +29,15 @@ def compute_enrichment_score(gene_scores,
     """
 
     if normalization_method:
+
         gene_scores = Series(
             normalize_1d_array(gene_scores, normalization_method),
             name=gene_scores.name,
             index=gene_scores.index)
 
-    gene_scores = gene_scores.sort_values(ascending=False)
+    gene_scores.sort_values(ascending=False, inplace=True)
 
-    in_ = in1d(gene_scores.index, gene_set_genes, assume_unique=True)
+    in_ = in1d(gene_scores.index, gene_set_genes.dropna(), assume_unique=True)
 
     if power != 1:
         gene_scores = abs(asarray(gene_scores))**power
@@ -59,12 +60,8 @@ def compute_enrichment_score(gene_scores,
     else:
         raise ValueError('Unknown statistic: {}.'.format(statistic))
 
-    print(enrichment_score)
-    print(type(enrichment_score))
-
     if plot:
-
-        plot_mountain_plot(in_, cumulative_sums, enrichment_score, (
+        plot_mountain_plot(cumulative_sums, in_, enrichment_score, (
             title,
             gene_scores.name, )[title is None], plot_file_path)
 

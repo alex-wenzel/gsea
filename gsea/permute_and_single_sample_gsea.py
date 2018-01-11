@@ -1,15 +1,15 @@
 from numpy import empty
 from numpy.random import shuffle
 
-from .compute_enrichment_score import compute_enrichment_score
+from .single_sample_gsea import single_sample_gsea
 
 
-def permute_and_compute_enrichment_score(gene_scores,
-                                         gene_set_genes,
-                                         n_permutation,
-                                         normalization_method='rank',
-                                         power=1,
-                                         statistic='ks'):
+def permute_and_single_sample_gsea(gene_scores,
+                                   gene_set_genes,
+                                   n_permutation,
+                                   normalization_method='rank',
+                                   power=1,
+                                   statistic='ks'):
     """
     Compute how much permuted gene scores enrich gene-set genes.
     Arguments:
@@ -29,7 +29,7 @@ def permute_and_compute_enrichment_score(gene_scores,
 
         shuffle(gene_scores)
 
-        enrichment_scores[i] = compute_enrichment_score(
+        enrichment_scores[i] = single_sample_gsea(
             gene_scores,
             gene_set_genes,
             normalization_method=normalization_method,

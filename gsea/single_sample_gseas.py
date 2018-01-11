@@ -1,15 +1,15 @@
 from pandas import DataFrame
 
-from .compute_enrichment_score import compute_enrichment_score
+from .simple_sample_gsea import single_sample_gsea
 from .support.support.path import establish_path
 
 
-def run_single_sample_gsea(gene_x_sample,
-                           gene_sets,
-                           normalization_method='rank',
-                           power=1,
-                           statistic='ks',
-                           file_path=None):
+def single_sample_gseas(gene_x_sample,
+                        gene_sets,
+                        normalization_method='rank',
+                        power=1,
+                        statistic='ks',
+                        file_path=None):
     """
     Gene-x-Sample ==> Gene-Set-x-Sample.
     Arguments:
@@ -28,24 +28,17 @@ def run_single_sample_gsea(gene_x_sample,
     score__gene_set_x_sample.index.name = 'Gene Set'
 
     for i, (sample, gene_scores) in enumerate(gene_x_sample.items()):
-        print('\n({}/{}) Computing gene set enrichment in {} ...'.format(
+        print('\n({}/{}) Running single-sample GSEA with {} ...'.format(
             i + 1, gene_x_sample.shape[1], sample))
-
-        min_score = gene_scores.min()
-        if min_score < 0:
-            print(
-                '\tThe sample column has negative value, so adding the minimum of the column ({:.3f}) to it ...'.
-                format(min_score))
-            gene_scores += min_score
 
         for i, (gene_set, gene_set_genes) in enumerate(gene_sets.iterrows()):
             print('\t({}/{}) Computing the enrichment of {} ...'.format(
                 i + 1, gene_sets.shape[0], gene_set))
 
             score__gene_set_x_sample.loc[
-                gene_set, sample] = compute_enrichment_score(
+                gene_set, sample] = single_sample_gsea(
                     gene_scores,
-                    gene_set_genes.dropna(),
+                    gene_set_genes,
                     normalization_method=normalization_method,
                     power=power,
                     statistic=statistic)

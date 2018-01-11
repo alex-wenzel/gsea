@@ -13,7 +13,7 @@ for dp, dns, fns in walk(NAME):
         packages.append(dp)
 setup(
     name=NAME,
-    version='0.0.5',
+    version='0.1.0',
     description='Library for gene-set enrichment analysis.',
     long_description='See {} to learn more.'.format(URL),
     url=URL,
