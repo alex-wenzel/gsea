@@ -23,7 +23,7 @@ def plot_mountain_plot(in_, cumulative_sums, score, title, file_path):
     ax.plot(range(in_.size), cumulative_sums, linewidth=2.6, color='#20D9BA')
 
     decorate(
-        title='{}\nEnrichment Score = {}'.format(title, score),
+        title='{}\nEnrichment Score = {:.3f}'.format(title, score),
         legend_loc=None)
 
     if file_path:
