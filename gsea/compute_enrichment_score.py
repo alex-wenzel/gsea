@@ -59,6 +59,9 @@ def compute_enrichment_score(gene_scores,
     else:
         raise ValueError('Unknown statistic: {}.'.format(statistic))
 
+    print(enrichment_score)
+    print(type(enrichment_score))
+
     if plot:
 
         plot_mountain_plot(in_, cumulative_sums, enrichment_score, (
