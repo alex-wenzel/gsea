@@ -61,7 +61,7 @@ def compute_enrichment_score(gene_scores,
 
     if plot:
 
-        plot_mountain_plot(in_, cumulative_sums, (
+        plot_mountain_plot(in_, cumulative_sums, enrichment_score, (
             title,
             gene_scores.name, )[title is None], plot_file_path)
 
