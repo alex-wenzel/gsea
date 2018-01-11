@@ -6,22 +6,21 @@ from .support.support.path import establish_path
 
 def run_single_sample_gsea(gene_x_sample,
                            gene_sets,
+                           normalization_method='rank',
                            power=1,
                            statistic='ks',
-                           plot=False,
                            file_path=None):
     """
     Gene-x-Sample ==> Gene-Set-x-Sample.
     Arguments:
-        gene_x_sample (DataFrame): (n_genes, n_samples); avoid having any
-            negative score
-        gene_sets (DataFrame): (n_gene_sets, max_gene_set_size)
-        power (number): power to raise gene_scores
+        gene_x_sample (DataFrame): (n_gene, n_sample)
+        gene_sets (DataFrame): (n_gene_set, max_gene_set_size)
+        normalization_method (str): '-0-' | '0-1' | 'rank'
+        power (number): power to raise gene_scores (Gene-x-Sample column)
         statistic (str): 'ks' (Kolmogorov-Smirnov) | 'auc' (area under curve)
-        plot (bool): whether to plot the mountain plot
-        file_path (str):
+        file_path (str): file path to save Gene-Set-x-Sample as .tsv file
     Returns:
-        DataFrame: (n_gene_sets, n_samples)
+        DataFrame: (n_gene_set, n_sample)
     """
 
     score__gene_set_x_sample = DataFrame(
@@ -43,16 +42,13 @@ def run_single_sample_gsea(gene_x_sample,
             print('\t({}/{}) Computing the enrichment of {} ...'.format(
                 i + 1, gene_sets.shape[0], gene_set))
 
-            gene_set_genes = gene_set_genes.dropna()
-
-            score = compute_enrichment_score(
-                gene_scores,
-                gene_set_genes,
-                power=power,
-                statistic=statistic,
-                plot=plot)
-
-            score__gene_set_x_sample.loc[gene_set, sample] = score
+            score__gene_set_x_sample.loc[
+                gene_set, sample] = compute_enrichment_score(
+                    gene_scores,
+                    gene_set_genes.dropna(),
+                    normalization_method=normalization_method,
+                    power=power,
+                    statistic=statistic)
 
     if file_path:
         establish_path(file_path, 'file')

@@ -8,16 +8,16 @@ def permute_and_compute_enrichment_score(gene_scores,
                                          gene_set_genes,
                                          n_permutations,
                                          power=1,
-                                         statistic='auc'):
+                                         statistic='ks'):
     """
     Compute how much permuted gene scores enrich gene-set genes.
     Arguments:
-        gene_scores (Series): (n_genes_with_score); sorted and indexed by gene
-        gene_set_genes (iterable): (n_genes)
+        gene_scores (Series): (n_gene_with_score)
+        gene_set_genes (iterable): (n_gene)
         power (number): power to raise gene_scores
-        statistic (str): 'auc' (area under curve) | 'ks' (Kolmogorov-Smirnov)
+        statistic (str): 'ks' (Kolmogorov-Smirnov) | 'auc' (area under curve)
     Returns:
-        array: (n_permutations)
+        array: (n_permutation)
     """
 
     enrichment_scores = empty(n_permutations)
