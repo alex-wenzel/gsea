@@ -55,7 +55,7 @@ def run_single_sample_gsea(gene_x_sample,
             score__gene_set_x_sample.loc[gene_set, sample] = score
 
     if file_path:
-        establish_path(file_path)
+        establish_path(file_path, 'file')
         score__gene_set_x_sample.to_csv(file_path, sep='\t')
 
     return score__gene_set_x_sample
