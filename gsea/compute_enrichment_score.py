@@ -11,6 +11,7 @@ def compute_enrichment_score(gene_scores,
                              power=1,
                              statistic='ks',
                              plot=False,
+                             title=None,
                              plot_file_path=None):
     """
     Compute how much gene scores enrich gene-set genes.
@@ -21,6 +22,7 @@ def compute_enrichment_score(gene_scores,
         power (number): power to raise gene_scores
         statistic (str): 'ks' (Kolmogorov-Smirnov) | 'auc' (area under curve)
         plot (bool): whether to plot
+        title (str):
         plot_file_path (str):
     Returns:
         float: enrichment score
@@ -58,11 +60,9 @@ def compute_enrichment_score(gene_scores,
         raise ValueError('Unknown statistic: {}.'.format(statistic))
 
     if plot:
-        plot_mountain_plot(
-            in_,
-            y,
-            cumulative_sums,
-            gene_scores.name,
-            file_path=plot_file_path)
+
+        plot_mountain_plot(in_, y, cumulative_sums, (
+            title,
+            gene_scores.name, )[title is None], plot_file_path)
 
     return enrichment_score
