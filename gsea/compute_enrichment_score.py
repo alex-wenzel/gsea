@@ -1,8 +1,8 @@
-from matplotlib.pyplot import figure, gca, show
 from numpy import abs, asarray, in1d, where
 from pandas import Series
 
 from .nd_array.nd_array.normalize_1d_array import normalize_1d_array
+from .plot_mountain_plot import plot_mountain_plot
 
 
 def compute_enrichment_score(gene_scores,
@@ -10,7 +10,8 @@ def compute_enrichment_score(gene_scores,
                              normalization_method='rank',
                              power=1,
                              statistic='ks',
-                             plot=False):
+                             plot=False,
+                             plot_file_path=None):
     """
     Compute how much gene scores enrich gene-set genes.
     Arguments:
@@ -20,6 +21,7 @@ def compute_enrichment_score(gene_scores,
         power (number): power to raise gene_scores
         statistic (str): 'ks' (Kolmogorov-Smirnov) | 'auc' (area under curve)
         plot (bool): whether to plot
+        plot_file_path (str):
     Returns:
         float: enrichment score
     """
@@ -55,13 +57,12 @@ def compute_enrichment_score(gene_scores,
     else:
         raise ValueError('Unknown statistic: {}.'.format(statistic))
 
-    # TODO: modularize plot function
     if plot:
-        figure(figsize=(8, 5))
-        ax = gca()
-        ax.plot(range(in_.size), in_, color='#808080', alpha=0.16)
-        ax.plot(range(in_.size), y, color='#9017E6')
-        ax.plot(range(in_.size), cumulative_sums, color='#20D9BA')
-        show()
+        plot_mountain_plot(
+            in_,
+            y,
+            cumulative_sums,
+            gene_scores.name,
+            file_path=plot_file_path)
 
     return enrichment_score
