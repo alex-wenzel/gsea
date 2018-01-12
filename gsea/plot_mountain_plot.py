@@ -9,6 +9,7 @@ from .plot.plot.get_ax_positions_relative_to_ax import \
 from .plot.plot.save_plot import save_plot
 
 
+# TODO: plot gene scores
 def plot_mountain_plot(cumulative_sums, in_, score, title, file_path):
     """
     Plot mountain plot.

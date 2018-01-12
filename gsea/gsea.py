@@ -1,7 +1,7 @@
 from os.path import join
 from random import sample, shuffle
 
-from numpy import empty
+from numpy import empty, empty_like
 from pandas import DataFrame
 
 from .compute_gene_scores import compute_gene_scores
@@ -34,11 +34,12 @@ def gsea(gene_x_sample,
         permuting (str): 'phenotype' | 'gene'
         directory_path (str):
     Returns:
-        DataFrame: (n_gene_set); columns=('Score', 'P-Value',)
+        DataFrame: (n_gene_set); columns=('Score', 'P-Value', 'FDR', )
     """
 
     scores = empty(gene_sets.shape[0])
-    p_values = empty(gene_sets.shape[0])
+    p_values = empty_like(scores)
+    fdrs = empty_like(scores)
 
     gene_score = compute_gene_scores(gene_x_sample, phenotypes, method)
 
@@ -114,6 +115,7 @@ def gsea(gene_x_sample,
     gene_set_score_p_value = DataFrame(index=gene_sets.index)
     gene_set_score_p_value['Score'] = scores
     gene_set_score_p_value['P-Value'] = p_values
+    gene_set_score_p_value['FDR'] = fdrs
 
     gene_set_score_p_value.sort_values('Score', inplace=True)
 
