@@ -1,10 +1,13 @@
+from os.path import join
 from random import sample, shuffle
 
 from numpy import empty
-from pandas import Series
+from pandas import DataFrame
 
 from .compute_gene_scores import compute_gene_scores
 from .single_sample_gsea import single_sample_gsea
+from .support.support.json_ import write_json
+from .support.support.path import clean_name, establish_path
 
 
 def gsea(gene_x_sample,
@@ -31,21 +34,32 @@ def gsea(gene_x_sample,
         permuting (str): 'phenotype' | 'gene'
         directory_path (str):
     Returns:
-        Series: (n_gene_set); scores
-        Series: (n_gene_set); p-values
+        DataFrame: (n_gene_set); columns=('Score', 'P-Value',)
     """
 
-    gene_set_score = Series(
-        name='Enrichment Score', index=gene_sets.index, dtype=float)
-    gene_set_score.index.name = 'Gene Set'
-
-    gene_set_p_value = Series(
-        name='P-Value', index=gene_sets.index, dtype=float)
-    gene_set_p_value.index.name = 'Gene Set'
+    scores = empty(gene_sets.shape[0])
+    p_values = empty(gene_sets.shape[0])
 
     gene_score = compute_gene_scores(gene_x_sample, phenotypes, method)
 
-    for gene_set, gene_set_genes in gene_sets.iterrows():
+    if directory_path:
+        establish_path(directory_path, 'directory')
+
+        write_json({
+            'method': method,
+            'normalization_method': normalization_method,
+            'power': power,
+            'statistic': statistic,
+            'n_permutation': n_permutation,
+        }, join(directory_path, 'parameters.json'))
+
+    for i, (gene_set, gene_set_genes) in enumerate(gene_sets.iterrows()):
+
+        if directory_path:
+            plot_file_path = join(directory_path,
+                                  '{}.png'.format(clean_name(gene_set)))
+        else:
+            plot_file_path = None
 
         score = single_sample_gsea(
             gene_score,
@@ -54,18 +68,19 @@ def gsea(gene_x_sample,
             power=power,
             statistic=statistic,
             plot=True,
-            title=gene_set)
+            title=gene_set,
+            plot_file_path=plot_file_path)
 
-        gene_set_score[gene_set] = score
+        scores[i] = score
 
         if n_permutation:
 
-            permutation_score = empty(n_permutation)
+            permutation_scores = empty(n_permutation)
 
             permuting__gene_x_sample = gene_x_sample.copy()
             permuting__phenotypes = list(phenotypes)
 
-            for i in range(n_permutation):
+            for j in range(n_permutation):
 
                 if permuting == 'phenotype':
                     shuffle(permuting__phenotypes)
@@ -78,7 +93,7 @@ def gsea(gene_x_sample,
                     raise ValueError(
                         'Unknown permuting: {}.'.format(permuting))
 
-                permutation_score[i] = single_sample_gsea(
+                permutation_scores[j] = single_sample_gsea(
                     compute_gene_scores(permuting__gene_x_sample,
                                         permuting__phenotypes, method),
                     gene_set_genes,
@@ -87,11 +102,23 @@ def gsea(gene_x_sample,
                     statistic=statistic)
 
             if 0 < score:
-                p_value = sum(score <= permutation_score) / n_permutation
+                n_equal_more_extreme = sum(score <= permutation_scores)
             else:
-                p_value = sum(permutation_score <= score) / n_permutation
-            gene_set_p_value[gene_set]
-        else:
-            gene_set_p_value[gene_set] = None
+                n_equal_more_extreme = sum(permutation_scores <= score)
 
-    return gene_set_score, gene_set_p_value
+            p_values[i] = max(1, n_equal_more_extreme) / n_permutation
+
+        else:
+            p_values[i] = None
+
+    gene_set_score_p_value = DataFrame(index=gene_sets.index)
+    gene_set_score_p_value['Score'] = scores
+    gene_set_score_p_value['P-Value'] = p_values
+
+    gene_set_score_p_value.sort_values('Score', inplace=True)
+
+    if directory_path:
+        gene_set_score_p_value.to_csv(
+            join(directory_path, 'gene_set_score_p_value.tsv'), sep='\t')
+
+    return gene_set_score_p_value
