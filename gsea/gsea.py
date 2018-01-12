@@ -86,8 +86,11 @@ def gsea(gene_x_sample,
                     power=power,
                     statistic=statistic)
 
-            gene_set_p_value[gene_set] = sum(
-                score <= permutation_score) / n_permutation
+            if 0 < score:
+                p_value = sum(score <= permutation_score) / n_permutation
+            else:
+                p_value = sum(permutation_score <= score) / n_permutation
+            gene_set_p_value[gene_set]
         else:
             gene_set_p_value[gene_set] = None
 
