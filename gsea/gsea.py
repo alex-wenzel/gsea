@@ -15,9 +15,10 @@ def gsea(gene_x_sample,
          power=1,
          statistic='ks',
          n_permutation=0,
-         permuting='phenotype'):
+         permuting='phenotype',
+         directory_path=None):
     """
-    Run GSEA with 2 phenotypes.
+    GSEA (with 2 phenotypes).
     Arguments:
         gene_x_sample (DataFrame): (n_gene, n_sample)
         phenotypes (iterable):
@@ -28,8 +29,9 @@ def gsea(gene_x_sample,
         statistic (str): 'ks' (Kolmogorov-Smirnov) | 'auc' (area under curve)
         n_permutation (int):
         permuting (str): 'phenotype' | 'gene'
+        directory_path (str):
     Returns:
-        Series: (n_gene_set); enrichment socres
+        Series: (n_gene_set); scores
         Series: (n_gene_set); p-values
     """
 
@@ -70,8 +72,8 @@ def gsea(gene_x_sample,
 
                 elif permuting == 'gene':
                     permuting__gene_x_sample.index = sample(
-                        permuting__gene_x_sample.index,
-                        len(permuting__gene_x_sample.shape[0]))
+                        permuting__gene_x_sample.index.tolist(),
+                        permuting__gene_x_sample.shape[0])
                 else:
                     raise ValueError(
                         'Unknown permuting: {}.'.format(permuting))

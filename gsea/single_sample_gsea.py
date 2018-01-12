@@ -14,7 +14,7 @@ def single_sample_gsea(gene_score,
                        title=None,
                        plot_file_path=None):
     """
-    Compute how much gene score enrich gene-set genes.
+    Single-sample GSEA.
     Arguments:
         gene_score (Series): (n_gene_with_score)
         gene_set_genes (iterable): (n_gene)
@@ -25,7 +25,7 @@ def single_sample_gsea(gene_score,
         title (str):
         plot_file_path (str):
     Returns:
-        float: enrichment score
+        float: score
     """
 
     if normalization_method:
@@ -52,17 +52,17 @@ def single_sample_gsea(gene_score,
     if statistic == 'ks':
         max_ = cumulative_sums.max()
         min_ = cumulative_sums.min()
-        enrichment_score = where(abs(min_) < abs(max_), max_, min_)
+        score = where(abs(min_) < abs(max_), max_, min_)
 
     elif statistic == 'auc':
-        enrichment_score = cumulative_sums.sum()
+        score = cumulative_sums.sum()
 
     else:
         raise ValueError('Unknown statistic: {}.'.format(statistic))
 
     if plot:
-        plot_mountain_plot(cumulative_sums, in_, enrichment_score, (
+        plot_mountain_plot(cumulative_sums, in_, score, (
             title,
             gene_score.name, )[title is None], plot_file_path)
 
-    return enrichment_score
+    return score

@@ -11,7 +11,7 @@ def permute_and_single_sample_gsea(gene_score,
                                    power=1,
                                    statistic='ks'):
     """
-    Compute how much permuted gene scores enrich gene-set genes.
+    Permute and single-sample GSEA.
     Arguments:
         gene_score (Series): (n_gene_with_score)
         gene_set_genes (iterable): (n_gene)
