@@ -34,7 +34,7 @@ def compute_gene_scores(gene_x_sample, phenotypes, method):
 
             phenotype_means.append(phenotype_mean)
 
-        gene_scores = compute_log_ratios(*phenotype_means)
+        gene_score = compute_log_ratios(*phenotype_means)
 
     elif method == 'signal_to_noise_ratio':
         raise NotImplementedError
@@ -49,6 +49,6 @@ def compute_gene_scores(gene_x_sample, phenotypes, method):
         raise ValueError('Unknown method: {}.'.format(method))
 
     return Series(
-        gene_scores,
+        gene_score,
         name='{} vs {}'.format(*unique_phenotypes),
         index=gene_x_sample.index)

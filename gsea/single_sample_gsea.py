@@ -5,7 +5,7 @@ from .nd_array.nd_array.normalize_1d_array import normalize_1d_array
 from .plot_mountain_plot import plot_mountain_plot
 
 
-def single_sample_gsea(gene_scores,
+def single_sample_gsea(gene_score,
                        gene_set_genes,
                        normalization_method='rank',
                        power=1,
@@ -14,12 +14,12 @@ def single_sample_gsea(gene_scores,
                        title=None,
                        plot_file_path=None):
     """
-    Compute how much gene scores enrich gene-set genes.
+    Compute how much gene score enrich gene-set genes.
     Arguments:
-        gene_scores (Series): (n_gene_with_score)
+        gene_score (Series): (n_gene_with_score)
         gene_set_genes (iterable): (n_gene)
         normalization_method (str): '-0-' | '0-1' | 'rank'
-        power (number): power to raise gene_scores
+        power (number): power to raise gene_score
         statistic (str): 'ks' (Kolmogorov-Smirnov) | 'auc' (area under curve)
         plot (bool): whether to plot
         title (str):
@@ -30,20 +30,20 @@ def single_sample_gsea(gene_scores,
 
     if normalization_method:
 
-        gene_scores = Series(
-            normalize_1d_array(gene_scores, normalization_method),
-            name=gene_scores.name,
-            index=gene_scores.index)
+        gene_score = Series(
+            normalize_1d_array(gene_score, normalization_method),
+            name=gene_score.name,
+            index=gene_score.index)
 
-    gene_scores.sort_values(ascending=False, inplace=True)
+    gene_score.sort_values(ascending=False, inplace=True)
 
-    in_ = in1d(gene_scores.index, gene_set_genes.dropna(), assume_unique=True)
+    in_ = in1d(gene_score.index, gene_set_genes.dropna(), assume_unique=True)
 
     if power != 1:
-        gene_scores = abs(asarray(gene_scores))**power
+        gene_score = abs(asarray(gene_score))**power
 
     in_int = in_.astype(int)
-    hit = (gene_scores * in_int) / gene_scores[in_].sum()
+    hit = (gene_score * in_int) / gene_score[in_].sum()
     miss = (1 - in_int) / (in_.size - in_.sum())
     y = hit - miss
 
@@ -63,6 +63,6 @@ def single_sample_gsea(gene_scores,
     if plot:
         plot_mountain_plot(cumulative_sums, in_, enrichment_score, (
             title,
-            gene_scores.name, )[title is None], plot_file_path)
+            gene_score.name, )[title is None], plot_file_path)
 
     return enrichment_score
