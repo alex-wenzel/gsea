@@ -92,8 +92,8 @@ def plot_mountain_plot(cumulative_sums,
         alpha=fill_between_alpha)
     decorate(ax=ax_gene_score, xlabel='Gene Rank', ylabel='Gene Score')
 
-    # ax.set_xticklabels(
-    #     [int(float(text.get_text()) + 1) for text in ax.get_xticklabels()])
+    ax.set_xticklabels(
+        [int(float(text.get_text()) + 1) for text in ax.get_xticklabels()])
 
     if file_path:
         save_plot(file_path)
