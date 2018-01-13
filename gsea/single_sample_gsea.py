@@ -60,9 +60,16 @@ def single_sample_gsea(gene_score,
     else:
         raise ValueError('Unknown statistic: {}.'.format(statistic))
 
+    score = float(score)
+
     if plot:
-        plot_mountain_plot(cumulative_sums, in_, score, (
-            title,
-            gene_score.name, )[title is None], plot_file_path)
+        plot_mountain_plot(
+            cumulative_sums,
+            in_,
+            gene_score.values,
+            title=(
+                title,
+                gene_score.name, )[title is None],
+            file_path=plot_file_path)
 
     return score
