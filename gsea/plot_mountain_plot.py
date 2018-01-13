@@ -80,7 +80,7 @@ def plot_mountain_plot(cumulative_sums,
             'bottom': True,
         },
         yticks=())
-    setp(ax_swarmplot.get_xaxis(), visible=False)
+    ax_swarmplot.set_axis_off()
 
     color = '#9017E6'
     ax_gene_score.plot(
