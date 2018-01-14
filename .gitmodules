@@ -4,3 +4,6 @@
 [submodule "gsea/nd_array"]
 	path = gsea/nd_array
 	url = https://github.com/KwatME/nd_array
+[submodule "gsea/plot"]
+	path = gsea/plot
+	url = https://github.com/KwatME/plot

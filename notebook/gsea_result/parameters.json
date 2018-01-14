@@ -1,0 +1,7 @@
+{
+  "method": "log_ratio",
+  "normalization_method": "rank",
+  "power": 1,
+  "statistic": "ks",
+  "n_permutation": 3
+}
